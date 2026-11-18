@@ -1,0 +1,69 @@
+name: test and release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -e '.[test]'
+      - run: pytest -q
+
+  release:
+    # タグ v* を push したときだけ。試験が通ってから wheel を作り、Release に置く
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: タグの版と CORE_VERSION が同じか
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          core="$(sed -n 's/^CORE_VERSION = "\(.*\)"$/\1/p' src/discordbot_core/__init__.py)"
+          echo "tag=$tag CORE_VERSION=$core"
+          if [ -z "$core" ] || [ "$tag" != "$core" ]; then
+            echo "::error::タグの版と CORE_VERSION が違う"
+            exit 1
+          fi
+          echo "VERSION=$core" >> "$GITHUB_ENV"
+      - name: wheel を作る
+        run: |
+          pip install build
+          python -m build --wheel
+      - name: SHA256SUMS と Release の本文を作る
+        run: |
+          cd dist
+          wheel="discordbot_core-${VERSION}-py3-none-any.whl"
+          test -f "$wheel"
+          sha256sum "$wheel" > SHA256SUMS
+          hash="$(cut -d' ' -f1 SHA256SUMS)"
+          {
+            echo "requirements-core.txt に入れる 1 行:"
+            echo
+            echo '```'
+            echo "discordbot-core @ ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${wheel} --hash=sha256:${hash}"
+            echo '```'
+          } > ../notes.md
+          cat ../notes.md
+      - name: Release を作る
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes-file notes.md \
+            "dist/discordbot_core-${VERSION}-py3-none-any.whl" dist/SHA256SUMS

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "discordbot-core"
+dynamic = ["version"]
+description = "discord.py で作る BOT の共通の土台"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "discord.py>=2.4,<3",
+    "python-dotenv>=1.0,<2",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<9"]
+
+# 版は CORE_VERSION の 1 か所だけ
+[tool.hatch.version]
+path = "src/discordbot_core/__init__.py"
+pattern = 'CORE_VERSION = "(?P<version>[^"]+)"'
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/discordbot_core"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--basetemp=/dev/shm/discordbot-core-pytest"
