@@ -63,7 +63,7 @@ class BaseBot(commands.Bot):
         # 既定: サーバーに入れた BOT（Guild Install）で、サーバーの中で使う。指定しないと、登録した時点の Developer Portal の
         # Installation の設定が使われ、User Install だけだとサーバーに出ない。特権インテントは BOT 側で intents に足す
         super().__init__(command_prefix=commands.when_mentioned,
-                         intents=intents or discord.Intents.default(), help_command=None,
+                         intents=intents if intents is not None else discord.Intents.default(), help_command=None,
                          allowed_mentions=discord.AllowedMentions.none(),  # 文に @everyone などがあっても鳴らさない
                          allowed_installs=allowed_installs or app_commands.AppInstallationType(guild=True, user=False),
                          allowed_contexts=allowed_contexts or app_commands.AppCommandContext(guild=True), **kwargs)

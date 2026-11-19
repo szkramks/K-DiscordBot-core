@@ -65,3 +65,12 @@ def test_app_command_error_uses_followup_when_responded():
     got, inter = _inter(done=True)
     asyncio.run(core.on_app_command_error(inter, app_commands.CheckFailure()))
     assert got["followup"] == core.NO_PERMISSION and "msg" not in got
+
+
+def test_base_bot_intents_none_is_kept_and_default_when_omitted():
+    """Intents.none()（値 0）を渡しても既定に置き換わらない。省いたときは既定"""
+    features = SimpleNamespace(__name__="feats", __path__=[])
+    bare = core.BaseBot(features=features, store=None, intents=discord.Intents.none())
+    assert bare.intents.value == 0
+    default = core.BaseBot(features=features, store=None)
+    assert default.intents.value == discord.Intents.default().value

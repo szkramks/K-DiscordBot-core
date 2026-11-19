@@ -2,4 +2,4 @@
 
 正本はこのリポジトリ。BOT は wheel で読む（README.md）。
 """
-CORE_VERSION = "1.4.0"
+CORE_VERSION = "1.4.1"

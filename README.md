@@ -223,3 +223,4 @@ import は `from discordbot_core.client import BaseBot` の形です。時刻は
 | 1.2.0 | `tasks.guarded` を追加（見回りの本体の例外で `tasks.loop` を止めない）。DB の待ち時間の既定を 30 秒に |
 | 1.3.0 | 見回りの生死の見張りを追加（`health.Watches`・`WATCHES`・`tick`）。見回りが遅れると `/tmp/alive` を止め、長く止まると BOT が自分で終了する。`BaseBot.exit_code`・`BaseBot.run` を追加 |
 | 1.4.0 | 時刻を JST で持つように変更（`parse_dt`・`fmt_dt` は JST。`JST`・`NOW_SQL` を追加）。古い版で書いた DB の時刻は使う側で直す必要がある。wheel で配る最初の版 |
+| 1.4.1 | `BaseBot` に `Intents.none()` を渡しても既定のインテントに置き換わらないように直した |
